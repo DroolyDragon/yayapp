@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>yay.fun</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fff;
+      color: #000;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .logo {
+      width: 120px;
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-top: 40px;
+    }
+
+    .card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #ddd;
+      transition: transform 0.1s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.03);
+    }
+
+    .card img {
+      width: 100%;
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <img
+      class="logo"
+      src="https://github.com/DroolyDragon/yayapp/blob/main/yay.applogo.png?raw=true"
+      alt="logo"
+    />
+
+    <div class="grid">
+      <a class="card" href="https://neal.fun/cursor-camp/">
+        <img src="./cursor-camp.svg" alt="Cursor Camp" />
+      </a>
+    </div>
+
+  </div>
+</body>
+</html>
