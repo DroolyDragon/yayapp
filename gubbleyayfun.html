@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gubble</title>
+
+  <link rel="icon" type="image/png" href="https://github.com/DroolyDragon/yayapp/blob/main/yay.appicon.png?raw=true">
+
+  <style>
+    body {
+      margin: 0;
+      background: #0a0a0a;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      gap: 14px;
+    }
+
+    h1 {
+      letter-spacing: 8px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    #grid {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .cell {
+      width: 48px;
+      height: 48px;
+      border: 1px solid #444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      text-transform: uppercase;
+      background: #111;
+    }
+
+    .green { background: #16a34a !important; }
+    .yellow { background: #ca8a04 !important; }
+    .gray { background: #2a2a2a !important; }
+
+    button {
+      background: #1a1a1a;
+      color: white;
+      border: 1px solid #333;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #222;
+    }
+
+    #msg {
+      min-height: 24px;
+      font-size: 18px;
+    }
+
+    #hintBox {
+      font-size: 14px;
+      color: #aaa;
+      min-height: 20px;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>GUBBLE</h1>
+
+  <div id="grid"></div>
+
+  <div>
+    <button onclick="giveHint()">hint</button>
+  </div>
+
+  <div id="hintBox"></div>
+  <div id="msg"></div>
+
+  <canvas id="confetti"></canvas>
+
+<script>
+const WORDS = [
+  "crane","slate","flame","grind","plush","stone","brave","crown","globe","shark",
+  "spine","orbit","plant","dream","frame","light","ghost","sugar","brick","water",
+  "apple","storm","pixel","arrow","beast","charm","dwarf","eagle","frost","giant"
+];
+
+const ANSWER = WORDS[Math.floor(Math.random() * WORDS.length)];
+
+const ROWS = 6;
+const COLS = 5;
+
+let grid = Array.from({ length: ROWS }, () => Array(COLS).fill(""));
+let row = 0;
+let col = 0;
+let gameOver = false;
+
+const gridEl = document.getElementById("grid");
+const msgEl = document.getElementById("msg");
+const hintEl = document.getElementById("hintBox");
+
+function draw() {
+  gridEl.innerHTML = "";
+
+  for (let r = 0; r < ROWS; r++) {
+    const rowEl = document.createElement("div");
+    rowEl.className = "row";
+
+    for (let c = 0; c < COLS; c++) {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      cell.textContent = grid[r][c];
+
+      if (r < row) {
+        const letter = grid[r][c];
+        if (letter === ANSWER[c]) cell.classList.add("green");
+        else if (ANSWER.includes(letter)) cell.classList.add("yellow");
+        else cell.classList.add("gray");
+      }
+
+      rowEl.appendChild(cell);
+    }
+
+    gridEl.appendChild(rowEl);
+  }
+}
+
+function submitGuess() {
+  const guess = grid[row].join("");
+
+  if (guess.length < 5) return;
+
+  if (guess === ANSWER) {
+    winGame();
+    return;
+  }
+
+  if (row === ROWS - 1) {
+    msgEl.textContent = "you lost. word was " + ANSWER;
+    gameOver = true;
+    return;
+  }
+
+  row++;
+  col = 0;
+}
+
+function winGame() {
+  gameOver = true;
+
+  // play sound instantly
+  const audio = new Audio("https://github.com/DroolyDragon/yayapp/blob/main/explosion.mp3?raw=true");
+  audio.play();
+
+  // confetti
+  startConfetti();
+
+  // delayed win text (no cut-off vibe)
+  setTimeout(() => {
+    msgEl.textContent = "YOU WON";
+  }, 400);
+}
+
+function giveHint() {
+  if (gameOver) return;
+
+  const revealed = ANSWER[Math.floor(Math.random() * ANSWER.length)];
+  hintEl.textContent = "hint letter: " + revealed;
+}
+
+// keyboard
+document.addEventListener("keydown", (e) => {
+  if (gameOver) return;
+
+  const key = e.key.toLowerCase();
+
+  if (key === "enter") {
+    submitGuess();
+    draw();
+    return;
+  }
+
+  if (key === "backspace") {
+    if (col > 0) {
+      col--;
+      grid[row][col] = "";
+      draw();
+    }
+    return;
+  }
+
+  if (/^[a-z]$/.test(key)) {
+    if (col < COLS) {
+      grid[row][col] = key;
+      col++;
+      draw();
+    }
+  }
+});
+
+// initial render
+draw();
+
+/* ---------------- CONFETTI ---------------- */
+
+const canvas = document.getElementById("confetti");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let pieces = [];
+
+function startConfetti() {
+  for (let i = 0; i < 150; i++) {
+    pieces.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * -canvas.height,
+      r: Math.random() * 6 + 2,
+      d: Math.random() * 100,
+      color: `hsl(${Math.random() * 360}, 100%, 60%)`,
+      tilt: Math.random() * 10 - 10
+    });
+  }
+
+  animateConfetti();
+}
+
+function animateConfetti() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  pieces.forEach((p) => {
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fill();
+
+    p.y += 3 + p.d / 50;
+    p.x += Math.sin(p.y * 0.01);
+
+    if (p.y > canvas.height) {
+      p.y = -10;
+      p.x = Math.random() * canvas.width;
+    }
+  });
+
+  if (gameOver) {
+    requestAnimationFrame(animateConfetti);
+  }
+}
+</script>
+</body>
+</html>
